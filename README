@@ -1,0 +1,321 @@
+Eclipse, Java, JRuby, Cucumber and ATDD
+Background
+
+So what is it that we want to do? Quite simply. We want to be able to build a software system from the ground up based upon acceptance criteria rather than some dream or vision a particular person had after eating some strange food.
+
+How do we do this if our language of choice is Java, we are using Eclipse, and we are running on Mac?
+
+Prerequisites for Eclipse
+
+1. You are running Mac OS 10.6.6
+2. You have installed Eclipse Helios
+
+Installing JRuby from source
+
+The hard way (for us geeks):
+
+1. Download the latest jruby from "http://jruby.org/download"
+
+2. It should download something like: "jruby-bin-[VERSION].tar.gz", e.g. "jruby-bin-1.6.0.RC1.tar.gz"; all subsequent steps will refer to the example version
+
+3. Create a directory: "/Library/jruby", from a command line: mkdir /Library/jruby
+
+4. Copy the jruby source to "/Library/jruby"
+
+5. Extract the jruby directory to "/Library/jruby", from a command line: "tar -xvf jruby-bin-1.6.0.RC1.tar.gz"
+
+6. Add the following to your ~/.bash_profile:
+	a. "export JRUBY_HOME=/Library/jruby/jruby-1.6.0.RC1"
+	b. "export PATH=$PATH:$JRUBY_HOME/bin"
+
+7. Restart your command line, or resource your ~/.bash_profile: "source ~/.bash_profile"
+
+8. Test by running "jruby -v"
+
+The easy way (for us efficient people that happen to be running macports):
+
+1. Run from command line: sudo port install jruby
+
+Setting up Cucumber and JRuby
+
+1. Run from command line: sudo jruby -S gem install cucumber
+
+Get going
+
+1. Create a new workspace in Eclipse named "calculator"
+
+2. Create a new java project called "calculator"
+
+3. Create a directory named "features" under the root of calculator
+
+4. Create a new file under "features" named "add_two_numbers.feature"
+
+5. Add the following to the file
+
+Feature: Add two numbers
+In order to add not have to use my head
+I want to add two numbers
+Scenario: Add two numbers
+Given I have a calculator
+When I add the numbers 1 and 2
+Then I get 3
+
+6. From the command prompt in your project directory, run: "jruby -S cucumber features". You should see the following output:
+
+Feature: Add two numbers
+In order to add not have to use my head
+I want to add two numbers
+
+Scenario: Add two numbers # features/add_two_numbers.feature:5
+Given I have a calculator # features/add_two_numbers.feature:6
+When I add the numbers 1 and 2 # features/add_two_numbers.feature:7
+Then I get 3 # features/add_two_numbers.feature:8
+
+1 scenario (1 undefined)
+3 steps (3 undefined)
+0m0.046s
+
+7. Now, create a directory called "steps" under your "features" directory
+
+8. In your steps directory, create a file called "calculator_steps.rb"
+
+9. Add the following to the file:
+
+require 'rspec'
+require 'java'
+$CLASSPATH << class="s2">'.') + "/bin/"
+include_class Java::com.seventytimessevengroup.Calculator
+
+Given /I have a calculator/ do
+end
+
+When /I add the numbers (\w+) and (\w+)/ do |first_number, second_number|
+<
+end
+
+Then /I get (\w+)/ do |result|
+end
+
+10. From the command prompt in your project directory, run: "jruby -S cucumber features".
+
+You should see the following output:
+Feature: Add two numbers
+In order to add not have to use my head
+I want to add two numbers
+
+Scenario: Add two numbers # features/add_two_numbers.feature:5
+Given I have a calculator # features/steps/calculator_steps.rb:5
+When I add the numbers 1 and 2 # features/steps/calculator_steps.rb:8
+Then I get 3 # features/steps/calculator_steps.rb:11
+
+1 scenario (1 passed)
+3 steps (3 passed)
+0m0.032s
+
+11. This is great, we are all green, now, let's try to call the code we wish we had. Add this code to your steps:
+
+require 'rspec'
+require 'java'
+$CLASSPATH << class="s2">'.') + "/bin/"
+include_class Java::com.seventytimessevengroup.Calculator
+
+Given /I have a caclulator/ do
+	@calculator = com.seventytimessevengroup.Calculator.new
+end
+
+When /I add the numbers (\d+) and (\d+)/ do |first_number, second_number|
+end
+
+Then /I get (\w+)/ do |result|
+end
+12. From the command prompt in your project directory, run: "jruby -S cucumber features".
+
+You should see the following output:
+Feature: Add two numbers
+In order to add not have to use my head
+I want to add two numbers
+
+Scenario: Add two numbers # features/add_two_numbers.feature:5
+Given I have a calculator # features/steps/calculator_steps.rb:5
+uninitialized constant Calculator (NameError)
+./features/steps/calculator_steps.rb:6:in `/I have a calculator/'
+features/add_two_numbers.feature:6:in `Given I have a calculator'
+When I add the numbers 1 and 2 # features/steps/calculator_steps.rb:9
+Then I get 3 # features/steps/calculator_steps.rb:12
+
+Failing Scenarios:
+cucumber features/add_two_numbers.feature:5 # Scenario: Add two numbers
+
+1 scenario (1 failed)
+3 steps (1 failed, 2 skipped)
+0m0.027s
+
+13. Maybe we should now make our class called "Calculator.java" and add the following code to it.
+
+package com.seventytimessevengroup;
+
+public class Calculator {
+	public Calculator() {
+	}
+}
+
+14. From the command prompt in your project directory, run: "jruby -S cucumber features". You should see the following output:
+
+Feature: Add two numbers
+In order to add not have to use my head
+I want to add two numbers
+
+Scenario: Add two numbers # features/add_two_numbers.feature:5
+Given I have a calculator # features/steps/calculator_steps.rb:5
+When I add he numbers 1 and 2 # features/steps/calculator_steps.rb:9
+Then I get 3 # features/steps/calculator_steps.rb:12
+
+1 scenario (1 passed)
+3 steps (3 passed)
+0m0.032s
+
+15. Great, now let's continue down our scenario and add two numbers. Add the following to your "calculator_steps.rb":
+
+require 'rspec'
+require 'java'
+$CLASSPATH << class="s2">'.') + "/bin/"
+include_class Java::com.seventytimessevengroup.Calculator
+
+Given /I have a caclulator/ do
+	@calculator = com.seventytimessevengroup.Calculator.new
+end
+
+When /I add the numbers (\d+) and (\d+)/ do |first_number, second_number|
+	@calculator.add(first_number.to_i, second_number.to_i)
+end
+
+Then /I get (\w+)/ do |result|
+end
+
+16. From the command prompt in your project directory, run: "jruby -S cucumber features".
+
+You should see the following output:
+Feature: Add two numbers
+In order to add not have to use my head
+I want to add two numbers
+
+Scenario: Add two numbers # features/add_two_numbers.feature:5
+Given I have a calculator # features/steps/calculator_steps.rb:5
+When I add the numbers 1 and 2 # features/steps/calculator_steps.rb:9
+undefined method `add' for # (NoMethodError)
+./features/steps/calculator_steps.rb:10:in `/I add the numbers (\d+) and (\d+)/'
+features/add_two_numbers.feature:7:in `When I add the numbers 1 and 2'
+Then I get 3 # features/steps/calculator_steps.rb:13
+
+Failing Scenarios:
+cucumber features/add_two_numbers.feature:5 # Scenario: Add two numbers
+
+1 scenario (1 failed)
+3 steps (1 failed, 1 skipped, 1 passed)
+0m0.033s
+
+17. Now let's add our add method to our Calculator object.
+
+package com.seventytimessevengroup;
+
+public class Calculator {
+	private int result;
+
+	public Calculator() {
+	}
+	
+	public void add(int firstNumber, int secondNumber) {
+		result = firstNumber + secondNumber;
+	}
+}
+18. From the command prompt in your project directory, run: "jruby -S cucumber features".
+
+You should see the following output:
+Feature: Add two numbers
+In order to add not have to use my head
+I want to add two numbers
+
+Scenario: Add two numbers # features/add_two_numbers.feature:5
+Given I have a calculator # features/steps/calculator_steps.rb:5
+When I add the numbers 1 and 2 # features/steps/calculator_steps.rb:9
+Then I get 3 # features/steps/calculator_steps.rb:13
+
+1 scenario (1 passed)
+3 steps (3 passed)
+0m0.031s
+
+19. Now, to complete our feature step definition:
+
+require 'rspec'
+require 'java'
+$CLASSPATH << class="s2">'.') + "/bin/"
+include_class Java::com.seventytimessevengroup.Calculator'
+
+Given /I have a calculator/ do
+	@calculator = com.seventytimessevengroup.Calculator.new
+end
+
+When /I add the numbers (\d+) and (\d+)/ do |first_number, second_number|
+	@calculator.add(first_number.to_i, second_number.to_i)
+end
+
+Then /I get (\w+)/ do |result|
+	@calculator.result().should == result.to_i
+end
+
+20. Now we need to finish our Calculator object.
+
+package com.seventytimessevengroup;
+
+public class Calculator {
+	private int result;
+
+	public Calculator() {
+	}
+	
+	public void add(int firstNumber, int secondNumber) {
+		result = firstNumber + secondNumber;
+	}
+	
+	public int result() {
+		return result;
+	}
+}
+
+21. From the command prompt in your project directory, run: "jruby -S cucumber features". You should see the following output:
+Feature: Add two numbers
+In order to add not have to use my head
+I want to add two numbers
+
+Scenario: Add two numbers # features/add_two_numbers.feature:5
+Given I have a calculator # features/steps/calculator_steps.rb:5
+When I add the numbers 1 and 2 # features/steps/calculator_steps.rb:9
+Then I get 3 # features/steps/calculator_steps.rb:13
+
+1 scenario (1 passed)
+3 steps (3 passed)
+0m0.035s
+
+22. And there you have it, a calculator fully acceptance-test driven.
+
+23. And if you really wanna have fun, but not sure if you need it, add a junit file "CalculatorTest.java"
+
+package com.seventytimessevengroup.tests;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import com.seventytimessevengroup.Calculator;
+
+public class CalculatorTest {
+	private final Calculator calculator = new Calculator();
+	
+@Test
+	public void addTwoNumbers() {
+		calculator.add(1, 2);
+		assertEquals(3, calculator.result());
+	}
+}
+
+24. How about that, fully test-driven as well, not sure why you need this last one though.
